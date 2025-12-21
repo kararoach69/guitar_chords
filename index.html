@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Guitar Chords Library</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; }
+select { padding: 6px; margin: 5px; min-width: 250px; }
+pre { background: #f4f4f4; padding: 15px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<h2>Guitar Chords Library</h2>
+
+<label>Singer:</label>
+<select id="singerSelect" onchange="loadSongs()">
+  <option value="">All</option>
+</select>
+
+<label>Song:</label>
+<select id="songSelect" onchange="showChord()">
+  <option value="">Select song</option>
+</select>
+
+<h3 id="songTitle"></h3>
+<pre id="chordBox"></pre>
+
+<script>
+let data = [];
+
+fetch('data.json')
+.then(res => res.json())
+.then(json => {
+    data = json;
+    loadSingers();
+});
+
+function loadSingers() {
+    const singers = [...new Set(data.map(d => d.singer))];
+    const singerSelect = document.getElementById('singerSelect');
+    singers.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        singerSelect.appendChild(opt);
+    });
+}
+
+function loadSongs() {
+    const singer = document.getElementById('singerSelect').value;
+    const songSelect = document.getElementById('songSelect');
+    songSelect.innerHTML = '<option value="">Select song</option>';
+
+    const songs = data.filter(d => !singer || d.singer === singer);
+    songs.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.song_title;
+        opt.textContent = d.song_title;
+        songSelect.appendChild(opt);
+    });
+
+    document.getElementById('chordBox').textContent = "";
+    document.getElementById('songTitle').textContent = "";
+}
+
+function showChord() {
+    const singer = document.getElementById('singerSelect').value;
+    const song = document.getElementById('songSelect').value;
+
+    const result = data.find(d =>
+        (!singer || d.singer === singer) &&
+        d.song_title === song
+    );
+
+    if(result) {
+        document.getElementById('songTitle').textContent =
+            result.song_title + " - " + result.singer;
+        document.getElementById('chordBox').textContent = result.chord;
+    }
+}
+</script>
+
+</body>
+</html>
